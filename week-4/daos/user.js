@@ -7,7 +7,7 @@ module.exports.getAll = (page, perPage) => {
 }
 
 module.exports.getById = (userId) => {
-  return User.findOne({ userId }).lean();
+  return User.findOne({ id_: userId }).lean();
 }
 
 module.exports.deleteById = (userId) => {

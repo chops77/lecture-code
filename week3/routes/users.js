@@ -31,12 +31,16 @@ router.get("/:id", async (req, res, next) => {
 
 // Read - all users
 router.get("/", async (req, res, next) => {
-  let { page, perPage, query } = req.query;
-  page = page ? Number(page) : 0;
-  perPage = perPage ? Number(perPage) : 10;
-  // TODO use query in search, if available
-  const users = await userDAO.getAll(page, perPage);
-  res.json(users);
+  try {
+    let { page, perPage, query } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    // TODO use query in search, if available
+    const users = await userDAO.getAll(page, perPage, query);
+    res.json(users);
+  } catch (e) {
+    next(e)
+  }
 });
 
 // Update

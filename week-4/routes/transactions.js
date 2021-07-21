@@ -4,6 +4,17 @@ const router = Router({ mergeParams: true });
 const transactionDAO = require('../daos/transaction');
 const userDAO = require('../daos/user');
 
+router.use(async (req, res, next) => {
+  const { userId } = req.params;
+  const user = await userDAO.getById(userId);
+  if (!user) {
+    res.status(404).send("User not found");
+  } else {
+    req.user = user;
+    next();
+  }
+});
+
 // Create
 router.post("/", async (req, res, next) => {
   const userId = req.params.userId;
@@ -25,7 +36,7 @@ router.post("/", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   const userId = req.params.userId;
   try {
-    const transaction = await transactionDAO.getById(userId, req.params.id);
+    const transaction = await transactionDAO.getById(req.user._id, req.params.id);
     // TODO populate user field in response with actual user data
     if (transaction) {
       res.json(transaction);
@@ -33,7 +44,7 @@ router.get("/:id", async (req, res, next) => {
       res.sendStatus(404);
     }
   } catch (e) {
-    res.status(500).send(e.message);
+    next(e);
   }
 });
 
@@ -75,6 +86,13 @@ router.delete("/:id", async (req, res, next) => {
   } catch(e) {
     res.status(500).send(e.message);
   }
+});
+
+router.use(function (err, req, res, next) {
+  if (err.message.includes("Cast to ObjectId failed")) {
+    res.status(400).send('Invalid id provided');
+  } else {
+    res.status(500).send('Something broke!')}
 });
 
 module.exports = router;
